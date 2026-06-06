@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram.types import BotCommand, BotCommandScopeDefault
+from aiohttp import web
 
 from ai_service import AIService
 from bot import create_bot, create_dispatcher
@@ -174,6 +175,22 @@ async def main():
     )
 
     logger.info("Бот запущен.")
+
+    async def health(request):
+        return web.Response(text="OK")
+
+    async def start_health():
+        app = web.Application()
+        app.router.add_get("/health", health)
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", 8080)
+        await site.start()
+        while True:
+            await asyncio.sleep(3600)
+
+    asyncio.create_task(start_health())
+
     try:
         await dp.start_polling(bot)
     finally:

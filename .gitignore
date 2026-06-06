@@ -1,5 +1,9 @@
-.env 
-__pycache__/ 
-*.pyc 
-bot.pid 
-bot.log 
+.env
+.env.backup
+.env.*
+__pycache__/
+*.pyc
+bot.pid
+bot.log
+freetier/
+.DS_Store 
