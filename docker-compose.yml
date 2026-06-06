@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  bot:
+    build: .
+    container_name: notification_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://botuser:botpass@db:5432/notifications
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: notification_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: botuser
+      POSTGRES_PASSWORD: botpass
+      POSTGRES_DB: notifications
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U botuser -d notifications"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

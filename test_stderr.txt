@@ -1,0 +1,14 @@
+2026-06-06 16:04:38,857 [INFO] __main__: Запуск...
+2026-06-06 16:04:39,222 [INFO] bot: Бот создан (id=89605786)
+2026-06-06 16:04:39,662 [INFO] __main__: Бот запущен.
+2026-06-06 16:04:39,716 [INFO] aiogram.dispatcher: Start polling
+2026-06-06 16:04:39,749 [INFO] __main__: Планировщик запущен (каждые 60 сек.)
+2026-06-06 16:04:40,420 [INFO] aiogram.dispatcher: Run polling for bot @stayproductivebot id=8960578668 - 'usefullbot'
+2026-06-06 16:04:41,211 [INFO] httpx: HTTP Request: POST https://api.notion.com/v1/databases/3775e757-ff6b-8191-9022-e8a4c6843127/query "HTTP/1.1 200 OK"
+2026-06-06 16:04:42,171 [INFO] httpx: HTTP Request: POST https://api.notion.com/v1/databases/3775e757-ff6b-811d-bd59-f85b0401e1f1/query "HTTP/1.1 200 OK"
+2026-06-06 16:04:44,687 [ERROR] aiogram.dispatcher: Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-06-06 16:04:44,688 [WARNING] aiogram.dispatcher: Sleep for 1.000000 seconds and try again... (tryings = 0, bot id = 8960578668)
+2026-06-06 16:04:50,104 [ERROR] aiogram.dispatcher: Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-06-06 16:04:50,105 [WARNING] aiogram.dispatcher: Sleep for 1.448503 seconds and try again... (tryings = 1, bot id = 8960578668)
+2026-06-06 16:04:56,379 [ERROR] aiogram.dispatcher: Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+2026-06-06 16:04:56,380 [WARNING] aiogram.dispatcher: Sleep for 1.776192 seconds and try again... (tryings = 2, bot id = 8960578668)
