@@ -338,7 +338,8 @@ def get_router(
             text += f"\U0001f3f7 Теги: {', '.join(escape(t) for t in item['tags'])}\n"
         if item["status"]:
             emoji = {"Проверено": "\u2705", "Новое": "\U0001f195", "Не подходит": "\u274c", "В использовании": "\U0001f4a1", "Тестирую": "\u2699\ufe0f"}
-            text += f"{emoji.get(item['status'], '\U0001f4ad')} Статус: {escape(item['status'])}\n"
+            unknown = "\U0001f4ad"
+            text += f"{emoji.get(item['status'], unknown)} Статус: {escape(item['status'])}\n"
         if item["description"]:
             text += f"\n{escape(item['description'])}"
         if item["notes"]:
