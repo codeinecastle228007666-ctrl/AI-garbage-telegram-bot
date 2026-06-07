@@ -53,8 +53,8 @@ async def rss_watcher(watched_service, content_service, ai_service, admin_ids, b
                         rel, data = await ai_service.is_relevant_post(post["title"], post["text"])
                         if not rel:
                             continue
-                    existing = await content_service.search_items(post["title"][:30])
-                    if existing:
+                    from handlers import _is_duplicate_post
+                    if await _is_duplicate_post(post, content_service):
                         continue
                     import secrets
                     pid = secrets.token_hex(6)

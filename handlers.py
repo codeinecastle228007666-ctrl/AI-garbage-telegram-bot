@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import os
 import secrets
 
 from aiogram import F, Router
@@ -23,6 +24,46 @@ _item_cache: dict[str, str] = {}  # short_id (8 chars) → full page_id
 _pending_items: dict[str, dict] = {}  # key → pending item for approval
 _stopped_users: set[int] = set()  # users who stopped RSS notifications
 
+_rejected_urls: set[str] = set()  # URLs that were rejected by admin
+_rejected_file = os.path.join(os.path.dirname(__file__), "rejected_urls.json")
+
+
+def _load_rejected_urls():
+    global _rejected_urls
+    try:
+        if os.path.exists(_rejected_file):
+            with open(_rejected_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                _rejected_urls = set(data) if isinstance(data, list) else set()
+    except Exception as e:
+        logger.warning("Failed to load rejected URLs: %s", e)
+
+
+def _save_rejected_urls():
+    try:
+        with open(_rejected_file, "w", encoding="utf-8") as f:
+            json.dump(list(_rejected_urls), f, ensure_ascii=False)
+    except Exception as e:
+        logger.warning("Failed to save rejected URLs: %s", e)
+
+
+async def _is_duplicate_post(post: dict, content_service: ContentService) -> bool:
+    """Проверить, не дублируется ли пост (по URL в rejected/pending/БД и по title в БД)."""
+    url = post.get("url", "") or ""
+    if url:
+        if url in _rejected_urls:
+            return True
+        for pid, item in list(_pending_items.items()):
+            if item.get("url") == url:
+                return True
+        existing = await content_service.find_by_url(url)
+        if existing:
+            return True
+    existing = await content_service.search_items(post.get("title", "")[:40])
+    if existing:
+        return True
+    return False
+
 
 def escape(text: str) -> str:
     """Экранирование HTML-символов для отправки в Telegram."""
@@ -34,9 +75,12 @@ def make_keyboard(*buttons: tuple[str, str]) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=b[0], callback_data=b[1])] for b in buttons])
 
 
+_load_rejected_urls()
+
+
 def get_router(
     user_service: UserService,
-    subscription_service: SubscriptionService,
+    subscription_service: ScheduleService,
     schedule_service: ScheduleService,
     content_service: ContentService,
     admin_ids: list[int],
@@ -216,8 +260,7 @@ def get_router(
                 if not r.get("match"):
                     continue
                 post = batch[r["idx"]]
-                existing = await content_service.search_items(post["title"][:40])
-                if existing:
+                if await _is_duplicate_post(post, content_service):
                     continue
 
                 pid = secrets.token_hex(6)
@@ -598,7 +641,11 @@ def get_router(
             return
         key = cb.data.removeprefix("reject_")
         if key in _pending_items:
-            _pending_items.pop(key)
+            item = _pending_items.pop(key)
+            url = (item.get("url") or "").strip()
+            if url:
+                _rejected_urls.add(url)
+                _save_rejected_urls()
             await cb.answer("\u274c Отклонено")
             await cb.message.edit_text(cb.message.html_text + "\n\n\u274c <b>Отклонено</b>")
         else:
@@ -775,8 +822,7 @@ def get_router(
                 rel, data = await ai_service.is_relevant_post(post["title"], post["text"])
                 if not rel:
                     continue
-                existing = await content_service.search_items(post["title"][:30])
-                if existing:
+                if await _is_duplicate_post(post, content_service):
                     continue
                 pid = secrets.token_hex(6)
                 ai_name = data.get("name", post.get("title", ""))

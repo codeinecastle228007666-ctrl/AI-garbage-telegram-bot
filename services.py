@@ -207,6 +207,15 @@ class ContentService:
         })
         return [self._parse_item(p) for p in r]
 
+    async def find_by_url(self, url: str):
+        """Найти запись по URL."""
+        if not url:
+            return None
+        r = await self.client.query_database(self.db_id, filter_={
+            "property": "URL", "url": {"equals": url},
+        })
+        return self._parse_item(r[0]) if r else None
+
     async def get_item(self, page_id: str):
         """Получить одну запись по ID."""
         page = await self.client.get_page(page_id)
